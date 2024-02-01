@@ -1,60 +1,39 @@
-// app.js
-
 const express = require('express');
-const expressWs = require('express-ws');
-const path = require('path');
-const fs = require('fs');
 const chokidar = require('chokidar');
+const fs = require('fs');
+const path = require('path')
 
 const app = express();
-expressWs(app);
-
-let wsClients = [];
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.ws('/ws', (ws, req) => {
-  console.log('WebSocket 연결이 열렸습니다.');
-
-  wsClients.push(ws);
-
-  ws.on('close', () => {
-    console.log('WebSocket 연결이 닫혔습니다.');
-    wsClients = wsClients.filter(client => client !== ws);
-  });
-});
-
-const logFilePath = path.join(__dirname, 'log.json');
-chokidar.watch(logFilePath).on('change', (event, path) => {
-  console.log('log.json 파일이 변경되었습니다.');
-
-  fs.readFile(logFilePath, 'utf8', (err, data) => {
-    if (err) {
-      console.error('log.json 파일을 읽는 도중 오류가 발생했습니다.');
-      return;
-    }
-
-    // JSON을 객체로 파싱
-    let jsonData = JSON.parse(data);
-
-    // 특정 키의 값을 변경 (예: 배열의 첫 번째 요소)
-    jsonData[0] = '';
-
-    // 변경된 데이터를 문자열로 변환
-    const updatedData = JSON.stringify(jsonData);
-
-    // 변경된 데이터를 모든 클라이언트에게 전송
-    wsClients.forEach(client => {
-      if (client.readyState === 1) {
-        client.send(updatedData);
-      }
-    });
-  });
-});
-
 const port = 3000;
+
+app.use(express.static('public')); // 정적 파일 서비스를 위한 폴더 public 생성
+
+// HTML 파일 보내기
+app.get('/', (req, res) => {
+  const pathData = path.join(__dirname, 'index.html')
+    res.sendFile(pathData);
+});
+
+// JSON 파일 읽어서 HTML로 전송
+app.get('/getData', (req, res) => {
+    fs.readFile('log.json', 'utf8', (err, data) => {
+        if (err) {
+            console.error(err);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+
+        res.json(JSON.parse(data));
+    });
+});
+
+// Chokidar를 사용한 파일 변경 감지 및 업데이트
+const watcher = chokidar.watch('log.json');
+watcher.on('change', () => {
+    console.log('log.json 파일이 변경되었습니다.');
+    // 클라이언트에게 변경을 알림 (Socket.io 또는 기타 방법을 사용)
+});
+
 app.listen(port, () => {
-  console.log(`서버가 http://localhost:${port} 에서 실행 중입니다.`);
+    console.log(`서버가 http://localhost:${port} 에서 실행 중입니다.`);
 });
