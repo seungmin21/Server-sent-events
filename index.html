@@ -1,25 +1,21 @@
-<!-- index.html -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>WebSocket and JSON Example</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Express & Chokidar Example</title>
 </head>
 <body>
-  <h1>WebSocket and JSON Example</h1>
-  <div id="json-container"></div>
+    <h1>Data from JSON</h1>
+    <div id="jsonData"></div>
 
-  <script>
-    const socket = new WebSocket('ws://localhost:3000/ws');
-    
-    socket.addEventListener('message', (event) => {
-      const jsonContainer = document.getElementById('json-container');
-      const jsonData = JSON.parse(event.data);
-
-      jsonContainer.innerHTML = `<pre>${JSON.stringify(jsonData, null, 2)}</pre>`;
-    });
-  </script>
+    <script>
+        // 서버에서 JSON 데이터 가져와서 화면에 출력
+        fetch('/getData')
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('jsonData').innerText = JSON.stringify(data, null, 2);
+            });
+    </script>
 </body>
 </html>
