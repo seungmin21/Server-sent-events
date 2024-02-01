@@ -7,5 +7,21 @@
 </head>
 <body>
   <div>hello world!</div>
+  <p id="Data"></p>
+  <script>
+    const eventSource = new EventSource('/sse');
+
+    eventSource.onmessage = function (event) {
+      const data = JSON.parse(event.data);
+      const sseDataElement = document.getElementById('Data');
+
+      sseDataElement.innerHTML = `<div>${data.text}</div>`;
+    };
+
+    eventSource.onerror = function (error) {
+      console.error('SSE Error:', error);
+      eventSource.close();
+    };
+  </script>
 </body>
 </html>
