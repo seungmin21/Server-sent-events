@@ -1,27 +1,25 @@
+<!-- index.html -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>WebSocket and JSON Example</title>
 </head>
 <body>
-  <div>hello world!</div>
-  <p id="Data"></p>
+  <h1>WebSocket and JSON Example</h1>
+  <div id="json-container"></div>
+
   <script>
-    const eventSource = new EventSource('/sse');
+    const socket = new WebSocket('ws://localhost:3000/ws');
+    
+    socket.addEventListener('message', (event) => {
+      const jsonContainer = document.getElementById('json-container');
+      const jsonData = JSON.parse(event.data);
 
-    eventSource.onmessage = function (event) {
-      const data = JSON.parse(event.data);
-      const sseDataElement = document.getElementById('Data');
-
-      sseDataElement.innerHTML = `<div>${data.text}</div>`;
-    };
-
-    eventSource.onerror = function (error) {
-      console.error('SSE Error:', error);
-      eventSource.close();
-    };
+      jsonContainer.innerHTML = `<pre>${JSON.stringify(jsonData, null, 2)}</pre>`;
+    });
   </script>
 </body>
 </html>
